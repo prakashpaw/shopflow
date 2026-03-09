@@ -1,4 +1,4 @@
-  stages:
+stages:
   - build
   - deploy
 
@@ -53,4 +53,4 @@ deploy:
     - scp docker/docker-compose.swarm.yml docker/nginx/nginx.conf ubuntu@$AWS_EC2_MANAGER_IP:~/shopflow/
     - ssh ubuntu@$AWS_EC2_MANAGER_IP "cd ~/shopflow && export REGISTRY=$CI_REGISTRY_IMAGE export TAG=latest export JWT_SECRET=$JWT_SECRET && docker stack deploy -c docker-compose.swarm.yml shopflow_stack"
   only:
-    - main
+    - master
