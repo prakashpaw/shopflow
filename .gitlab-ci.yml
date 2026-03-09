@@ -4,13 +4,20 @@ stages:
 deploy_vercel:
   stage: deploy
   image: node:20-alpine
-  script:
-    - npm install -g vercel
-    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-    - vercel build --prod --token=$VERCEL_TOKEN
-    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
   variables:
     VERCEL_ORG_ID: $VERCEL_ORG_ID
     VERCEL_PROJECT_ID: $VERCEL_PROJECT_ID
+    VERCEL_TOKEN: $VERCEL_TOKEN
+  script:
+    - npm install -g vercel
+    - |
+      if [ -z "$VERCEL_TOKEN" ]; then
+        echo "ERROR: VERCEL_TOKEN is not set. Add it in GitLab Settings > CI/CD > Variables."
+        exit 1
+      fi
+    - echo "Token is configured (length ${#VERCEL_TOKEN})"
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+    - vercel build --prod --token=$VERCEL_TOKEN
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
   only:
     - master
