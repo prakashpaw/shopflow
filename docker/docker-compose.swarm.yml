@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: ${REGISTRY}/shopflow-frontend:${TAG:-latest}
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+    networks:
+      - shopflow-overlay
+
+  auth-service:
+    image: ${REGISTRY}/shopflow-auth:${TAG:-latest}
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+    deploy:
+      replicas: 2
+    networks:
+      - shopflow-overlay
+
+  product-service:
+    image: ${REGISTRY}/shopflow-product:${TAG:-latest}
+    deploy:
+      replicas: 2
+    networks:
+      - shopflow-overlay
+
+  order-service:
+    image: ${REGISTRY}/shopflow-order:${TAG:-latest}
+    environment:
+      - AUTH_URL=http://auth-service:4001
+    deploy:
+      replicas: 2
+    networks:
+      - shopflow-overlay
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    configs:
+      - source: nginx_config
+        target: /etc/nginx/nginx.conf
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - shopflow-overlay
+
+configs:
+  nginx_config:
+    file: ./nginx/nginx.conf
+
+networks:
+  shopflow-overlay:
+    driver: overlay

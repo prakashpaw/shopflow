@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ../services/frontend
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      update_config:
+        order: start-first
+    networks:
+      - shopflow-net
+
+  auth-service:
+    build:
+      context: ../services/auth-service
+    ports:
+      - "4001:4001"
+    environment:
+      - JWT_SECRET=supersecret
+      - PORT=4001
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      update_config:
+        order: start-first
+    networks:
+      - shopflow-net
+
+  product-service:
+    build:
+      context: ../services/product-service
+    ports:
+      - "4002:4002"
+    environment:
+      - PORT=4002
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      update_config:
+        order: start-first
+    networks:
+      - shopflow-net
+
+  order-service:
+    build:
+      context: ../services/order-service
+    ports:
+      - "4003:4003"
+    environment:
+      - AUTH_URL=http://auth-service:4001
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4003/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      update_config:
+        order: start-first
+    networks:
+      - shopflow-net
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "3000:80"
+    depends_on:
+      - frontend
+      - auth-service
+      - product-service
+      - order-service
+    networks:
+      - shopflow-net
+
+networks:
+  shopflow-net:
+    driver: bridge
