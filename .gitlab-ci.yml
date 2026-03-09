@@ -6,13 +6,11 @@ deploy_vercel:
   image: node:20-alpine
   script:
     - npm install -g vercel
-    - >
-      if [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
-        echo "Error: VERCEL_ORG_ID and VERCEL_PROJECT_ID must be set in GitLab CI/CD Variables."
-        exit 1
-      fi
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
     - vercel build --prod --token=$VERCEL_TOKEN
     - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+  variables:
+    VERCEL_ORG_ID: $VERCEL_ORG_ID
+    VERCEL_PROJECT_ID: $VERCEL_PROJECT_ID
   only:
     - master
