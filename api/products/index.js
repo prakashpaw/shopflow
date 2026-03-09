@@ -1,4 +1,5 @@
-const express = require('express');
+import express from 'express';
+import cors from 'cors';
 
 const router = express.Router();
 
@@ -27,11 +28,17 @@ router.post('/', (req, res) => {
     // communicating with the auth service or sharing the JWT secret.
     // For this demo, we'll read a mock 'X-User-Role' header or similar decoding.
     
+    // multer parses text fields into req.body and files into req.file
     const { name, price, category, stock, image } = req.body;
     
     if (!name || !price) {
         return res.status(400).json({ error: 'Name and price are required' });
     }
+    
+    // Determine the image URL
+    // If an imageFile was uploaded, construct the local URL path.
+    // Otherwise, fall back to the provided image URL or default placeholder.
+    let imageUrl = image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
     
     const newProduct = {
         id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
@@ -39,7 +46,7 @@ router.post('/', (req, res) => {
         price,
         category: category || 'General',
         stock: stock || 0,
-        image: image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+        image: imageUrl
     };
     
     products.push(newProduct);
@@ -55,4 +62,10 @@ router.delete('/:id', (req, res) => {
     res.status(404).json({ error: 'Not found' });
 });
 
-module.exports = router;
+const app = express();
+app.use(cors());
+app.use(express.json());
+// Mount to /api/products namespace
+app.use('/api/products', router);
+
+export default app;

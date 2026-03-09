@@ -16,7 +16,7 @@ export default function Orders() {
       return;
     }
 
-    fetch('/orders/', {
+    fetch('/api/orders/', {
       headers: {
         'Authorization': `Bearer ${token}`
       }

@@ -30,7 +30,7 @@ export default function Cart() {
       }));
 
       // Send to the Order service
-      const res = await fetch('/orders/', {
+      const res = await fetch('/api/orders/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

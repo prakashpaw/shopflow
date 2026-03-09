@@ -1,0 +1,35 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "api/**/*.js",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "api/**/*.py",
+        "use": "@vercel/python"
+      },
+      {
+        "src": "services/frontend/package.json",
+        "use": "@vercel/vite"
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/auth/(.*)",
+        "destination": "/api/auth/"
+      },
+      {
+        "source": "/products/(.*)",
+        "destination": "/api/products/"
+      },
+      {
+        "source": "/orders/(.*)",
+        "destination": "/api/orders/"
+      },
+      {
+        "source": "/(.*)",
+        "destination": "/services/frontend/$1"
+      }
+    ]
+  }

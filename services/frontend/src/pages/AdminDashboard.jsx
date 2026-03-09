@@ -4,14 +4,13 @@ import { Users, PackagePlus, Trash2, Plus, ShieldAlert } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
-  const [newProduct, setNewProduct] = useState({ name: '', price: '', category: '' });
-  const [imageFile, setImageFile] = useState(null);
+  const [newProduct, setNewProduct] = useState({ name: '', price: '', category: '', image: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/auth/users', {
+      const res = await fetch('/api/auth/users', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!res.ok) throw new Error('Failed to fetch users');
@@ -31,7 +30,7 @@ export default function AdminDashboard() {
   const handleDeleteUser = async (username) => {
     if(!window.confirm(`Are you sure you want to delete ${username}?`)) return;
     try {
-      const res = await fetch(`/auth/users/${username}`, {
+      const res = await fetch(`/api/auth/users/${username}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -48,27 +47,23 @@ export default function AdminDashboard() {
 
   const handleCreateProduct = async (e) => {
     e.preventDefault();
-    
-    // Use FormData for file uploads
-    const formData = new FormData();
-    formData.append('name', newProduct.name);
-    formData.append('price', parseFloat(newProduct.price));
-    formData.append('category', newProduct.category || 'General');
-    if (imageFile) {
-        formData.append('imageFile', imageFile);
-    }
-    
     try {
-      const res = await fetch('/products/', {
+      const res = await fetch('/api/products/', {
         method: 'POST',
-        body: formData
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          name: newProduct.name,
+          price: parseFloat(newProduct.price),
+          category: newProduct.category || 'General',
+          image: newProduct.image
+        })
       });
       if (res.ok) {
         alert('Product added successfully!');
-        setNewProduct({ name: '', price: '', category: '' });
-        setImageFile(null);
-        // Reset file input element manually
-        document.getElementById('imageFileInput').value = '';
+        setNewProduct({ name: '', price: '', category: '', image: '' });
       } else {
         alert('Failed to add product');
       }
@@ -136,15 +131,9 @@ export default function AdminDashboard() {
                 <input type="text" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all" />
               </div>
             </div>
-            <div className="pt-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Product Photo</label>
-              <input 
-                id="imageFileInput"
-                type="file" 
-                accept="image/*"
-                onChange={e => setImageFile(e.target.files[0])} 
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 dark:file:bg-slate-800 dark:file:text-brand-400 dark:hover:file:bg-slate-700 transition-all cursor-pointer"
-              />
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Photo URL (Optional)</label>
+              <input type="url" placeholder="https://images.unsplash.com/..." value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all" />
             </div>
             <button type="submit" className="w-full flex justify-center items-center gap-2 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl mt-4 transition-colors">
               <Plus size={20} /> Publish Product

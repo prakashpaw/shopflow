@@ -7,10 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Serve static uploaded images
-const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
 // Prometheus Metrics
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 collectDefaultMetrics({ register: promClient.register });
